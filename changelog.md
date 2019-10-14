@@ -17,3 +17,8 @@
 1.1.1
   -[*] change todo list format
   -[*] change changelog microformat
+
+1.1.3
+  -[*] latest folder don't create by default (--latest param)
+  -[+] ability set add-on names in input mode
+  -[+] autocompleter add-on names list (if input method)

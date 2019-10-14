@@ -96,7 +96,8 @@ class ScriptParam
             //  param only for long name
             $consoleParams = array_merge($consoleParamsWithShort, [
                 'help',
-                'wibug'
+                'wibug',
+                'latest'
             ]);
 
             $this->param = getopt( implode('', array_keys($consoleParams)), $consoleParams );
@@ -119,9 +120,32 @@ class ScriptParam
 
     }
 
+    public function readAddonName()
+    {
+      readline_completion_function(array('self', 'autocompleter'));
+      $command_input = readline("Add-on name: ");
+
+      $this->set('addon_name', $command_input);
+    }
+
+    public function autocompleter($input, $index)
+    {
+      // FIXME: add for global const config
+      $addons_folder = DIR_ROOT . '/app/addons/';
+
+      return is_dir($addons_folder)
+        ? $addons_list = array_diff(scandir($addons_folder), array('..', '.'))
+        : [];
+    }
+
     public function get($name)
     {
         return isset($this->param[$name]) ? $this->param[$name] : '';
+    }
+
+    public function set($name, $value)
+    {
+        return $this->param[$name] = $value;
     }
 
     public function isset($name)
@@ -146,8 +170,11 @@ Options:
             --help          Show this message
             --wibug         Display PHP notice
         -a  --addon_name    List of the add-ons separated by comma
-        -p  --package       Create folder on package format with the specified name or (if not exist) the add-on version
+                            (if empty, can enter in autocomplete input)
+        -p  --package       Create folder on package format with the
+                            specified name or (if not exist) the add-on version
         -z  --zip           Create zip archive
+            --latest        Create latest folder
 
 Example:
         php get_addon.php --addon_name=altteam_esp --package='production esp'
@@ -158,7 +185,9 @@ Request params:
     help          Show this message
     wibug         Display PHP notice
     addon_name    List of the add-ons separated by comma
-    package       Create folder on package format with the specified name or (if not exist) the add-on version
+                  (if empty, can enter in autocomplete input)
+    package       Create folder on package format with the specified
+                  name or (if not exist) the add-on version
     zip           Create zip archive
     upload        Upload zip archive
 
@@ -365,10 +394,8 @@ Addon::$scriptParam = new ScriptParam();
 
 //  dispaly help
 if (Addon::$scriptParam->isset('help')) {
-
     fn_print_r(ScriptParam::getHelp());
     exit();
-
 }
 
 //  enable error reporting
@@ -384,8 +411,16 @@ if (Addon::$scriptParam->isset('wibug')) {
 }
 
 //  check required fields
-if (empty(Addon::$scriptParam->get('addon_name'))) {
+if (!Addon::$scriptParam->get('addon_name')) {
+
+  if (ScriptParam::isConsole()) {
+    //  try to get with input line
+    Addon::$scriptParam->readAddonName();
+  }
+
+  if (!Addon::$scriptParam->get('addon_name')) {
     $m->end('Блять!!! введи имя в addon_name, можно через запятаю');    //  Kubik original mesage $)
+  }
 }
 
 //  create main folder if not exist
@@ -483,17 +518,19 @@ foreach ($addons as $addon_name) {
                 }
             }
 
-            //  copy on 'latest' folder
             fn_rm($save_addon_dir . 'latest');
-            fn_copy($to_dir, $save_addon_dir . '0.latest');
+
+            if (Addon::$scriptParam->isset('latest')) {
+              //  copy on 'latest' folder
+              fn_copy($to_dir, $save_addon_dir . '0.latest');
+            }
 
             //  create archive if package
             $addon->createArchive();
 
             $addon->uploadArchive();
 
-            $m->push('Create for: '
-              . $addon->getNormalName()
+            $m->push($addon->getNormalName()
               . ' (' . $addon_name . ') '
               . ' Version: ' . $addon->getVersion());
 
