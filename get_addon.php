@@ -1,5 +1,5 @@
-#!/usr/bin/env php
 <?php
+#!/usr/bin/env php
 
 namespace Tygh\GetAddon;
 
@@ -179,6 +179,7 @@ Options:
 Example:
         php get_addon.php --addon_name=altteam_esp --package='production esp'
         php get_addon.php -aaltteam_shop_by_brands -zp
+        get_addon.php
 "
         : "
 Request params:
@@ -190,6 +191,7 @@ Request params:
                   name or (if not exist) the add-on version
     zip           Create zip archive
     upload        Upload zip archive
+    latest        Create latest folder
 
 ";
     }

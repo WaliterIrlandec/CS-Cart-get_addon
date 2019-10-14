@@ -22,3 +22,6 @@
   -[*] latest folder don't create by default (--latest param)
   -[+] ability set add-on names in input mode
   -[+] autocompleter add-on names list (if input method)
+
+1.1.4
+  -[!] BF. Didn't work on html version

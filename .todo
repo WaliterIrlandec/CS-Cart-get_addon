@@ -1,8 +1,8 @@
 ☐ add git add addon folders , git commit< addon name, version, check if there is changelog.(txt/md) or version.(txt/md) isset and have info for curent version > add to commit this info
 
-☐ autocomplete addon name id (get from ./app/addons/*)
 ＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
 Archive:
+  ✔ autocomplete addon name id (get from ./app/addons/*) @done(2019-10-15 01:40)
   ✔ Add #!/usr/bin/env php @done(2019-10-14 23:31)
   ✔ replace short param for looong and finish the ScriptParam @done(2019-10-14 23:31)
   ✔ automatic creation the "get_addons" folder @done(2019-10-14 23:31)
