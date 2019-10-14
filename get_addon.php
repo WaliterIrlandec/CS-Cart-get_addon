@@ -1,5 +1,5 @@
-<?php
 #!/usr/bin/env php
+<?php
 
 namespace Tygh\GetAddon;
 
@@ -11,11 +11,11 @@ define('ACCOUNT_TYPE', 'admin');
 require(dirname(__FILE__) . '/init.php');
 
 /**
-* 
+*
 */
 class GetAddonException extends \Exception
 {
-    
+
     protected function getMessageBody()
     {
 
@@ -42,7 +42,7 @@ class GetAddonException extends \Exception
 */
 class DisplayMessage
 {
-    
+
     protected $line = 1;
     protected $break = '<br /><br />';
 
@@ -77,7 +77,7 @@ class DisplayMessage
 */
 class ScriptParam
 {
-    
+
     protected $param = [];
 
     public function __construct()
@@ -98,12 +98,12 @@ class ScriptParam
                 'help',
                 'wibug'
             ]);
-        
+
             $this->param = getopt( implode('', array_keys($consoleParams)), $consoleParams );
 
             //  duplicate param with short name
             foreach ($consoleParamsWithShort as $short => $long) {
-                
+
                 if (isset($this->param[trim(str_replace(':', '', $short))])) {
                     $this->param[trim(str_replace(':', '', $long))] = $this->param[trim(str_replace(':', '', $short))];
                 }
@@ -138,7 +138,7 @@ class ScriptParam
     static public function getHelp()
     {
 
-        return self::isConsole() 
+        return self::isConsole()
         ? "
 usage: php get_addon.php [--help] [--wibug] [-a|--addon_name='first_addon, second_addon'] [-p|--package=package_name] [-z|--zip]
 
@@ -168,11 +168,11 @@ Request params:
 }
 
 /**
-* 
+*
 */
 class Addon
 {
-    
+
     private $data = [];
     static public $scriptParam = [];
 
@@ -187,7 +187,7 @@ class Addon
         $data['addon_scheme'] = \Tygh\Addons\SchemesManager::getScheme($id);
 
         $data['version'] = $this->getVersion();
-        
+
         $data['save_name']      = $this->getSaveName();
         $data['save_addon_dir'] = DIR_ROOT . '/get_addons/' . $data['id'] . '/';
         $data['to_dir']      = $data['save_addon_dir'] . $data['save_name'];
@@ -199,7 +199,7 @@ class Addon
         fn_mkdir($data['save_addon_dir'] . '/temp');
 
     }
-   
+
     public function __destruct() {
         fn_rm($this->getData('save_addon_dir') . '/temp');
     }
@@ -223,12 +223,17 @@ class Addon
         return $this->getData('addon_scheme')->getVersion();
     }
 
+    public function getNormalName()
+    {
+        return $this->getData('addon_scheme')->getName();
+    }
+
     public function getSaveName()
     {
         return self::isPackage()
             ? !empty(Addon::$scriptParam->get('package'))
                 ? Addon::$scriptParam->get('package')
-                : $this->getData('id') . '_' . $this->getVersion() 
+                : $this->getData('id') . '_' . $this->getVersion()
             : $this->getData('id') . date('Y_m_d-H_i_s');
     }
 
@@ -292,7 +297,7 @@ class Addon
         }
 
         $source = str_replace('\\', '/', realpath($source));
-        
+
         if (is_dir($source) === true) {
 
             $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source), \RecursiveIteratorIterator::SELF_FIRST);
@@ -334,9 +339,9 @@ class Addon
 
     //  based on Kubik function
     static public function fullCopy($source, $target) {
-    
+
         if (is_dir($source))  {
-    
+
             fn_mkdir($target);
             $d = dir($source);
 
@@ -360,7 +365,7 @@ Addon::$scriptParam = new ScriptParam();
 
 //  dispaly help
 if (Addon::$scriptParam->isset('help')) {
-    
+
     fn_print_r(ScriptParam::getHelp());
     exit();
 
@@ -368,14 +373,14 @@ if (Addon::$scriptParam->isset('help')) {
 
 //  enable error reporting
 if (Addon::$scriptParam->isset('wibug')) {
-    
+
     error_reporting(E_ALL);
     ini_set('display_errors', 'On');
-    
+
     if (!defined('DEVELOPMENT')) {
         define('DEVELOPMENT', true);
     }
-        
+
 }
 
 //  check required fields
@@ -415,7 +420,7 @@ $dir_themes = array(
     '/design/themes/[name]/css/addons/',
     '/design/themes/[name]/mail/templates/addons/',
     '/design/themes/[name]/media/images/addons/',
-    
+
 );
 
 foreach ($dir_themes as $v) {
@@ -431,13 +436,13 @@ $m->hr();
 $addons = explode(',', Addon::$scriptParam->get('addon_name'));
 
 foreach ($addons as $addon_name) {
-    
+
     try {
 
         $addon_name = trim($addon_name);
 
         if (file_exists(DIR_ROOT . '/app/addons/' . $addon_name . '/addon.xml')) {
-            
+
             $addon = new Addon($addon_name);
 
             $save_name      = $addon->getSaveName();
@@ -447,17 +452,17 @@ foreach ($addons as $addon_name) {
             if ( !fn_mkdir($to_dir) ) {
                 throw new GetAddonException( $to_dir, 2 );
             }
-            
+
             foreach ($scan_dirs as $v) {
-            
+
                 $from = DIR_ROOT . $v . $addon_name;
                 $to = $to_dir . str_replace('design/themes', 'var/themes_repository', $v  . $addon_name);
-            
+
                 if (file_exists($from)) {
                     Addon::fullCopy($from, $to);
                 }
             }
-            
+
             if (is_dir(DIR_ROOT . '/var/langs/en')) {
 
                 $dir_list = scandir(DIR_ROOT . '/var/langs');
@@ -477,7 +482,7 @@ foreach ($addons as $addon_name) {
                     }
                 }
             }
-            
+
             //  copy on 'latest' folder
             fn_rm($save_addon_dir . 'latest');
             fn_copy($to_dir, $save_addon_dir . '0.latest');
@@ -487,7 +492,10 @@ foreach ($addons as $addon_name) {
 
             $addon->uploadArchive();
 
-            $m->push('Create for: ' . $addon_name);
+            $m->push('Create for: '
+              . $addon->getNormalName()
+              . ' (' . $addon_name . ') '
+              . ' Version: ' . $addon->getVersion());
 
         } else {
             throw new GetAddonException( $addon_name, 1 );
